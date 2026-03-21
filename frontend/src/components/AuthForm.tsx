@@ -89,8 +89,10 @@ export default function AuthForm({ type }: AuthFormProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...formData,
-            walletAddress: address,
+            name: formData.username,
+            email: formData.email,
+            password: formData.password,
+            stellarAddress: address,
           }),
         });
 
