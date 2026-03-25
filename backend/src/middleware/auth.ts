@@ -10,11 +10,11 @@ export interface AuthRequest extends Request {
   userRole?: UserRole;
 }
 
-export const authenticate = (
+export const authenticate = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -33,6 +33,18 @@ export const authenticate = (
     }
 
     req.userId = decoded.userId;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { role: true },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: "User not found." });
+      return;
+    }
+
+    req.userRole = user.role;
     next();
   } catch {
     res.status(401).json({ error: "Invalid or expired token." });

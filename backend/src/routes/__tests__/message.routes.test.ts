@@ -14,7 +14,10 @@ jest.mock("@prisma/client", () => {
       count: jest.fn(),
     },
     user: {
-      findUnique: jest.fn(),
+      findUnique: jest.fn().mockResolvedValue({
+        id: "00000000-0000-4000-8000-000000000001",
+        role: "FREELANCER",
+      }),
     },
     notification: {
       create: jest.fn(),
@@ -55,6 +58,7 @@ jest.mock("../../services/notification.service", () => ({
 import { PrismaClient } from "@prisma/client";
 const prismaMock = new PrismaClient() as any;
 const messageMock = prismaMock.message;
+const userMock = prismaMock.user;
 
 // ─── App setup ────────────────────────────────────────────────────────────────
 const app = express();
@@ -72,6 +76,14 @@ function authHeader(userId = USER_TEST_ID) {
 }
 
 afterEach(() => jest.clearAllMocks());
+
+beforeEach(() => {
+  // Ensure authenticate finds a user record by default
+  userMock.findUnique.mockResolvedValue({
+    id: USER_TEST_ID,
+    role: "FREELANCER",
+  });
+});
 
 // ─── POST /api/messages ───────────────────────────────────────────────────────
 describe("POST /api/messages", () => {
